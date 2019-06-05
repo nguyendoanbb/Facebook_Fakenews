@@ -1,0 +1,206 @@
+---
+title: "Analysis of Fake News Websites on Facebook in 2018"
+author: "Nguyen Doan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+```{r, echo=FALSE, message=FALSE}
+#Import libraries
+library(data.table) #data import
+library(tidyverse) #data manipulation
+library(stringr) #string manipulation
+library(rebus) #verbose string manipulation
+library(ggridges)
+library(tm) #text mining
+library(wordcloud) #text visualization
+```
+
+
+## Introduction
+
+Fake news have been a growing concern for an online community. Not only young generation usually get fooled by these news, but the old generation can also mistake these as real information. In order to help readers to avoid these news, a detailed analysis with website names, types of articles, and text mining may prove useful.
+
+The purpose of this analysis is to explore a fake news dataset from [BuzzFeedNews](https://github.com/BuzzFeedNews/2018-12-fake-news-top-50). It contains 13961 fabricated articles on Facebook in 2018 from various websites. 
+
+## Summary
+
+The data contains 13961 observations with 7 variables:
+
+- `title`: a title of a news article
+- `url`: website url
+- `fb_engagement`: count of facebook engagement (comments, likes, shares)
+- `published_date`: when an article was released
+- `category`: what an article is about
+
+A quick look at the data:
+
+```{r, echo=FALSE, results='asis'}
+data <- fread("top_2018.txt", stringsAsFactors = T, data.table = F)
+knitr::kable(head(data, 5))
+```
+
+## Data Cleaning
+
+Before analyzing data, we need to format each variable and extract useful information. 
+
+- Change `published_date` to date format:
+```{r}
+data$published_date <- as.Date(data$published_date, format = "%Y-%m-%d")
+```
+
+- Change `fb_engagement` to numeric:
+```{r}
+data$fb_engagement <- round(as.integer(data$fb_engagement),0)
+```
+
+- Check missing values:
+```{r}
+map_dbl(data, function(x) sum(is.na(x)))
+```
+
+- Extract website name from url
+```{r}
+#extract website from url
+web_data <- data %>%
+    mutate(website=str_extract(url, pattern = "(https://|http://).*?\\.(com|net|us|org|uk|co|fr|website)"))
+
+#Combine duplicated websites
+web_data <- web_data %>%
+    mutate(website = case_when(
+        website == "http://yournewswire.com" ~ "https://yournewswire.com",
+        website == "https://neonnettle.com"  ~ "http://www.neonnettle.com",
+        website == website ~ website))
+```
+
+## Exploratory Data Analysis
+
+1. A time series plot shows an increasing trend in fake news. A sudden spike on 07-20-2018 has a lot of articles coming from http://en.mediamass.net. 
+```{r, message=FALSE}
+web_data %>%
+    select(published_date) %>%
+    group_by(published_date) %>%
+    summarise(total_articles = n()) %>%
+    ggplot(aes(x=published_date, y=total_articles)) +
+    geom_line(color = "sky blue") +
+    stat_smooth(color = "#FC4E07",method = "auto", se = FALSE)+
+    theme_bw() +
+    labs(title = "Count of Fake News Articles",
+         subtitle = "Included every categories from Dec 2017-Dec 2018",
+        x = "Published Date",
+        y = "Number of Articles")+
+    theme(plot.title = element_text(face="bold")) +
+    geom_text(aes(x=as.Date("2018-07-20	"), y=560, label="Sudden spike in count"))
+```
+
+```{r, message=FALSE}
+web_data %>%
+    filter(published_date == "2018-07-20") %>%
+    group_by(website) %>%
+    summarise(count=n()) %>%
+    top_n(9, count) %>%
+    ggplot(aes(x=reorder(website, count), y=count, fill=website))+
+    geom_bar(stat="identity", show.legend = F)+
+    theme_bw()+
+    theme(plot.title = element_text(face="bold"))+
+    coord_flip()+
+    labs(title = "Sudden Spike in 07-20-2018",
+        x="Website",
+        y="Count")
+```
+
+2. Top websites in term of number of articles.
+
+```{r}
+web_data %>%
+    group_by(website) %>%
+    summarise(count = n()) %>%
+    top_n(9, count) %>%
+    ggplot(aes(x=reorder(website, count), y=count, fill=website))+
+    geom_bar(stat="identity", show.legend = F)+
+    theme_bw()+
+    theme(plot.title = element_text(face="bold"))+
+    coord_flip()+
+    scale_fill_brewer(palette = "Blues")+
+    labs(title = "Websites with Highest Count of Articles",
+        y = "Number of Articles",
+        x = "Website")
+```
+
+3. Despite the fact that these are fake news, the number of engagement for these websites can range from 0 to as high as 3500. The number of engagement includes number of likes, comments and shares. This means that Facebook still allows these news to be reachable to users. It definitely needs a better algorithm of eliminate fake news automatically. 
+
+```{r, message = FALSE}
+web_data %>%
+    filter(website %in% c("https://yournewswire.com","https://newspunch.com","http://www.neonnettle.com",
+                       "https://en.mediamass.net","https://adobochronicles.com",
+                      "http://www.truthandaction.org","http://www.12minutos.com","https://uokhun.uk",
+                      "http://www.cvikasdrv.com")) %>%
+    ggplot(aes(x = fb_engagement, y = website)) +
+    geom_density_ridges_gradient(aes(fill = ..x..), scale = 2, size = 0.1, quantile_lines = TRUE, quantiles = 2) +
+    xlim(0,3500)+
+    theme_bw()+
+    scale_fill_gradientn(colours = c("#003399", "#0099FF", "#CCFFFF"), name="Facebook Engagement") +
+    theme(plot.title = element_text(face="bold")) +
+    labs(title = "Facebook Engagement Distribution of Top Websites",
+        x = "Facebook Engagement",
+        y = "Website",
+        subtitle = "Middle line indicates median")
+
+```
+
+4. Diving deep into category may show us what these articles are about. However, a table below with frequency of each category shows mostly a writer's name of an article or owner of those websites instead of articles' topic. We may need to perform text mining on articles' title to see check for real topics.
+
+```{r}
+knitr::kable(web_data %>%
+    filter(website %in% c("https://yournewswire.com","https://newspunch.com","http://www.neonnettle.com",
+                       "https://en.mediamass.net","https://adobochronicles.com",
+                      "http://www.truthandaction.org","http://www.12minutos.com","https://uokhun.uk",
+                      "http://www.cvikasdrv.com")) %>%
+    filter(category != "") %>%
+    select(website,category) %>%
+    group_by(category) %>%
+    summarise(count=n()) %>%
+    arrange(desc(count)))
+```
+
+5. Looking at a word cloud, politic is the most common topics for fake news. Key words such as **Trump**, **Hillary**, **Obama**, and **Russia** are among the top. Other negative key words such as **dead**, **arrested**, and **ban** are also mentioned a lot. 
+
+```{r, echo = FALSE}
+web_data$title <- as.character(web_data$title)
+
+title <- VectorSource(web_data$title)
+#corpus stores text data in list
+title_corpus <- VCorpus(title)
+
+#cleaning text
+clean_corpus <- function(corpus) {
+  # Remove punctuation
+  corpus <- tm_map(corpus, removePunctuation)
+  # Transform to lower case
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  # Remove stopwords
+  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "says", "new", "news"))
+  # Strip whitespace
+  corpus <- tm_map(corpus, stripWhitespace)
+  return(corpus)
+}
+
+title_clean_corpus <- clean_corpus(title_corpus)
+
+#create document-term matrix for visualization
+title_dtm <- TermDocumentMatrix(title_clean_corpus)
+title_matrix <- as.matrix(title_dtm)
+term_frequency <- rowSums(title_matrix)
+term_frequency <- sort(term_frequency, decreasing = TRUE)
+
+term_frequency_df <- data.frame(name = names(term_frequency),
+                                frequency = term_frequency,
+                                row.names = NULL)
+```
+
+```{r}
+wordcloud(term_frequency_df$name, term_frequency_df$frequency, max.words = 100, random.order = FALSE, random.color = FALSE, colors= c("skyblue","skyblue1","skyblue2","skyblue3", "skyblue4"))
+```
+
+## Conclusion
+
+This analysis provided top websites with fake content to avoid. It also gives a glimpse onto topics such as politic that usually has a lot of fake news. However, this is not an exhausted list of every websites, Facebook users should be careful and selective with what content they read. Maybe next time, keeping or banning a list of fake news website is a good idea!
