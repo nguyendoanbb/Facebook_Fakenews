@@ -1,7 +1,8 @@
-name: "Fake News Analysis"
+name: "my-website"
 navbar:
-  title: "Fake News Analysis"
+  title: "My Website"
   left:
+    - text: "Home"
+      href: index.html
     - text: "Analysis"
       href: fakenews_git_publish.html
-output_dir: "docs"

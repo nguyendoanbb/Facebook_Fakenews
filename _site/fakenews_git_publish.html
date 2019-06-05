@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Nguyen Doan" />
+
+<meta name="date" content="2019-06-05" />
+
+<title>Analysis of Fake News Websites on Facebook in 2018</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="fakenews_git_publish.html">Analysis</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Analysis of Fake News Websites on Facebook in 2018</h1>
+<h4 class="author"><em>Nguyen Doan</em></h4>
+<h4 class="date"><em>2019-06-05</em></h4>
+
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Fake news have been a growing concern for an online community. Not only young generation usually get fooled by these news, but the old generation can also mistake these as real information. In order to help readers to avoid these news, a detailed analysis with website names, types of articles, and text mining may prove useful.</p>
+<p>The purpose of this analysis is to explore a fake news dataset from <a href="https://github.com/BuzzFeedNews/2018-12-fake-news-top-50">BuzzFeedNews</a>. It contains 13961 fabricated articles on Facebook in 2018 from various websites.</p>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>The data contains 13961 observations with 7 variables:</p>
+<ul>
+<li><code>title</code>: a title of a news article</li>
+<li><code>url</code>: website url</li>
+<li><code>fb_engagement</code>: count of facebook engagement (comments, likes, shares)</li>
+<li><code>published_date</code>: when an article was released</li>
+<li><code>category</code>: what an article is about</li>
+</ul>
+<p>A quick look at the data:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">title</th>
+<th align="left">url</th>
+<th align="left">fb_engagement</th>
+<th align="left">published_date</th>
+<th align="left">category</th>
+<th align="left">source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Lottery winner arrested for dumping $200,000 of manure on ex-boss’ lawn</td>
+<td align="left"><a href="https://worldnewsdailyreport.com/lottery-winner-arrested-for-dumping-200000-of-manure-on-ex-boss-lawn/" class="uri">https://worldnewsdailyreport.com/lottery-winner-arrested-for-dumping-200000-of-manure-on-ex-boss-lawn/</a></td>
+<td align="left">2,383,021.00</td>
+<td align="left">2018-05-13</td>
+<td align="left">Crime</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">Former first lady Barbara Bush dies at 92 - CNN</td>
+<td align="left"><a href="http://breaking-cnn.com/former-first-lady-barbara-bush-dies-92/" class="uri">http://breaking-cnn.com/former-first-lady-barbara-bush-dies-92/</a></td>
+<td align="left">2,290,000.00</td>
+<td align="left">2018-04-16</td>
+<td align="left">Politics</td>
+<td align="left">Trendolizer</td>
+</tr>
+<tr class="odd">
+<td align="left">Woman sues Samsung for $1.8M after cell phone gets stuck inside her vagina</td>
+<td align="left"><a href="https://worldnewsdailyreport.com/woman-sues-samsung-for-1-8m-after-cell-phone-gets-stuck-inside-her-vagina/" class="uri">https://worldnewsdailyreport.com/woman-sues-samsung-for-1-8m-after-cell-phone-gets-stuck-inside-her-vagina/</a></td>
+<td align="left">1,304,430.00</td>
+<td align="left">2018-09-19</td>
+<td align="left">Medical</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">BREAKING: Michael Jordan Resigns From The Board At Nike-Takes ‘Air Jordans’ With Him</td>
+<td align="left"><a href="https://trumpbetrayed.us/all/breaking-michael-jordan-resigns-from-the-board-at-nike-takes-air-jordans-with-him/" class="uri">https://trumpbetrayed.us/all/breaking-michael-jordan-resigns-from-the-board-at-nike-takes-air-jordans-with-him/</a></td>
+<td align="left">911,336.00</td>
+<td align="left">2018-09-05</td>
+<td align="left">Business</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Donald Trump Ends School Shootings By Banning Schools</td>
+<td align="left"><a href="https://www.8shit.net/donald-trump-ends-school-shootings-banning-schools/" class="uri">https://www.8shit.net/donald-trump-ends-school-shootings-banning-schools/</a></td>
+<td align="left">830,116.00</td>
+<td align="left">2018-02-23</td>
+<td align="left">Politics</td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="data-cleaning" class="section level2">
+<h2>Data Cleaning</h2>
+<p>Before analyzing data, we need to format each variable and extract useful information.</p>
+<ul>
+<li>Change <code>published_date</code> to date format:</li>
+</ul>
+<pre class="r"><code>data$published_date &lt;- as.Date(data$published_date, format = &quot;%Y-%m-%d&quot;)</code></pre>
+<ul>
+<li>Change <code>fb_engagement</code> to numeric:</li>
+</ul>
+<pre class="r"><code>data$fb_engagement &lt;- round(as.integer(data$fb_engagement),0)</code></pre>
+<ul>
+<li>Check missing values:</li>
+</ul>
+<pre class="r"><code>map_dbl(data, function(x) sum(is.na(x)))</code></pre>
+<pre><code>##          title            url  fb_engagement published_date       category 
+##              0              0              0              0              0 
+##         source 
+##              0</code></pre>
+<ul>
+<li>Extract website name from url</li>
+</ul>
+<pre class="r"><code>#extract website from url
+web_data &lt;- data %&gt;%
+    mutate(website=str_extract(url, pattern = &quot;(https://|http://).*?\\.(com|net|us|org|uk|co|fr|website)&quot;))
+
+#Combine duplicated websites
+web_data &lt;- web_data %&gt;%
+    mutate(website = case_when(
+        website == &quot;http://yournewswire.com&quot; ~ &quot;https://yournewswire.com&quot;,
+        website == &quot;https://neonnettle.com&quot;  ~ &quot;http://www.neonnettle.com&quot;,
+        website == website ~ website))</code></pre>
+</div>
+<div id="exploratory-data-analysis" class="section level2">
+<h2>Exploratory Data Analysis</h2>
+<ol style="list-style-type: decimal">
+<li>A time series plot shows an increasing trend in fake news. A sudden spike on 07-20-2018 has a lot of articles coming from <a href="http://en.mediamass.net" class="uri">http://en.mediamass.net</a>.</li>
+</ol>
+<pre class="r"><code>web_data %&gt;%
+    select(published_date) %&gt;%
+    group_by(published_date) %&gt;%
+    summarise(total_articles = n()) %&gt;%
+    ggplot(aes(x=published_date, y=total_articles)) +
+    geom_line(color = &quot;sky blue&quot;) +
+    stat_smooth(color = &quot;#FC4E07&quot;,method = &quot;auto&quot;, se = FALSE)+
+    theme_bw() +
+    labs(title = &quot;Count of Fake News Articles&quot;,
+         subtitle = &quot;Included every categories from Dec 2017-Dec 2018&quot;,
+        x = &quot;Published Date&quot;,
+        y = &quot;Number of Articles&quot;)+
+    theme(plot.title = element_text(face=&quot;bold&quot;)) +
+    geom_text(aes(x=as.Date(&quot;2018-07-20 &quot;), y=560, label=&quot;Sudden spike in count&quot;))</code></pre>
+<p><img src="fakenews_git_publish_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>web_data %&gt;%
+    filter(published_date == &quot;2018-07-20&quot;) %&gt;%
+    group_by(website) %&gt;%
+    summarise(count=n()) %&gt;%
+    top_n(9, count) %&gt;%
+    ggplot(aes(x=reorder(website, count), y=count, fill=website))+
+    geom_bar(stat=&quot;identity&quot;, show.legend = F)+
+    theme_bw()+
+    theme(plot.title = element_text(face=&quot;bold&quot;))+
+    coord_flip()+
+    labs(title = &quot;Sudden Spike in 07-20-2018&quot;,
+        x=&quot;Website&quot;,
+        y=&quot;Count&quot;)</code></pre>
+<p><img src="fakenews_git_publish_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<ol start="2" style="list-style-type: decimal">
+<li>Top websites in term of number of articles.</li>
+</ol>
+<pre class="r"><code>web_data %&gt;%
+    group_by(website) %&gt;%
+    summarise(count = n()) %&gt;%
+    top_n(9, count) %&gt;%
+    ggplot(aes(x=reorder(website, count), y=count, fill=website))+
+    geom_bar(stat=&quot;identity&quot;, show.legend = F)+
+    theme_bw()+
+    theme(plot.title = element_text(face=&quot;bold&quot;))+
+    coord_flip()+
+    scale_fill_brewer(palette = &quot;Blues&quot;)+
+    labs(title = &quot;Websites with Highest Count of Articles&quot;,
+        y = &quot;Number of Articles&quot;,
+        x = &quot;Website&quot;)</code></pre>
+<p><img src="fakenews_git_publish_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<ol start="3" style="list-style-type: decimal">
+<li>Despite the fact that these are fake news, the number of engagement for these websites can range from 0 to as high as 3500. The number of engagement includes number of likes, comments and shares. This means that Facebook still allows these news to be reachable to users. It definitely needs a better algorithm of eliminate fake news automatically.</li>
+</ol>
+<pre class="r"><code>web_data %&gt;%
+    filter(website %in% c(&quot;https://yournewswire.com&quot;,&quot;https://newspunch.com&quot;,&quot;http://www.neonnettle.com&quot;,
+                       &quot;https://en.mediamass.net&quot;,&quot;https://adobochronicles.com&quot;,
+                      &quot;http://www.truthandaction.org&quot;,&quot;http://www.12minutos.com&quot;,&quot;https://uokhun.uk&quot;,
+                      &quot;http://www.cvikasdrv.com&quot;)) %&gt;%
+    ggplot(aes(x = fb_engagement, y = website)) +
+    geom_density_ridges_gradient(aes(fill = ..x..), scale = 2, size = 0.1, quantile_lines = TRUE, quantiles = 2) +
+    xlim(0,3500)+
+    theme_bw()+
+    scale_fill_gradientn(colours = c(&quot;#003399&quot;, &quot;#0099FF&quot;, &quot;#CCFFFF&quot;), name=&quot;Facebook Engagement&quot;) +
+    theme(plot.title = element_text(face=&quot;bold&quot;)) +
+    labs(title = &quot;Facebook Engagement Distribution of Top Websites&quot;,
+        x = &quot;Facebook Engagement&quot;,
+        y = &quot;Website&quot;,
+        subtitle = &quot;Middle line indicates median&quot;)</code></pre>
+<p><img src="fakenews_git_publish_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<ol start="4" style="list-style-type: decimal">
+<li>Diving deep into category may show us what these articles are about. However, a table below with frequency of each category shows mostly a writer’s name of an article or owner of those websites instead of articles’ topic. We may need to perform text mining on articles’ title to see check for real topics.</li>
+</ol>
+<pre class="r"><code>knitr::kable(web_data %&gt;%
+    filter(website %in% c(&quot;https://yournewswire.com&quot;,&quot;https://newspunch.com&quot;,&quot;http://www.neonnettle.com&quot;,
+                       &quot;https://en.mediamass.net&quot;,&quot;https://adobochronicles.com&quot;,
+                      &quot;http://www.truthandaction.org&quot;,&quot;http://www.12minutos.com&quot;,&quot;https://uokhun.uk&quot;,
+                      &quot;http://www.cvikasdrv.com&quot;)) %&gt;%
+    filter(category != &quot;&quot;) %&gt;%
+    select(website,category) %&gt;%
+    group_by(category) %&gt;%
+    summarise(count=n()) %&gt;%
+    arrange(desc(count)))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">category</th>
+<th align="right">count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Sean Adl-tabatabai</td>
+<td align="right">2835</td>
+</tr>
+<tr class="even">
+<td align="left">Neon Nettle</td>
+<td align="right">1398</td>
+</tr>
+<tr class="odd">
+<td align="left">Niamh Harris</td>
+<td align="right">1284</td>
+</tr>
+<tr class="even">
+<td align="left">Baxter Dmitry</td>
+<td align="right">1154</td>
+</tr>
+<tr class="odd">
+<td align="left">Pol Pinoy</td>
+<td align="right">654</td>
+</tr>
+<tr class="even">
+<td align="left">Jay Greenberg</td>
+<td align="right">614</td>
+</tr>
+<tr class="odd">
+<td align="left">12minutos.com</td>
+<td align="right">424</td>
+</tr>
+<tr class="even">
+<td align="left">Admin</td>
+<td align="right">278</td>
+</tr>
+<tr class="odd">
+<td align="left">Daniel Newton</td>
+<td align="right">211</td>
+</tr>
+<tr class="even">
+<td align="left">Paul Whitehead</td>
+<td align="right">111</td>
+</tr>
+<tr class="odd">
+<td align="left">Jessica Simpson</td>
+<td align="right">101</td>
+</tr>
+<tr class="even">
+<td align="left">Riva Mendoza</td>
+<td align="right">101</td>
+</tr>
+<tr class="odd">
+<td align="left">Jacky Murphy</td>
+<td align="right">95</td>
+</tr>
+<tr class="even">
+<td align="left">Carol Kearney</td>
+<td align="right">56</td>
+</tr>
+<tr class="odd">
+<td align="left">John White</td>
+<td align="right">43</td>
+</tr>
+<tr class="even">
+<td align="left">Lori Macatee</td>
+<td align="right">35</td>
+</tr>
+<tr class="odd">
+<td align="left">Scott Morefield</td>
+<td align="right">26</td>
+</tr>
+<tr class="even">
+<td align="left">Elizabeth Sy</td>
+<td align="right">25</td>
+</tr>
+<tr class="odd">
+<td align="left">Zach Selby</td>
+<td align="right">25</td>
+</tr>
+<tr class="even">
+<td align="left">Katie Dawson</td>
+<td align="right">23</td>
+</tr>
+<tr class="odd">
+<td align="left">Phil Crabtree</td>
+<td align="right">22</td>
+</tr>
+<tr class="even">
+<td align="left">Rebecca Miles</td>
+<td align="right">21</td>
+</tr>
+<tr class="odd">
+<td align="left">Sammie Dean</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">Smith Alexander</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">Susan Garner</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">Thomas Williams</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">Brent Meslow</td>
+<td align="right">18</td>
+</tr>
+<tr class="even">
+<td align="left">Allison Fey</td>
+<td align="right">16</td>
+</tr>
+<tr class="odd">
+<td align="left">Daniel Chaitin</td>
+<td align="right">15</td>
+</tr>
+<tr class="even">
+<td align="left">Allison Park</td>
+<td align="right">14</td>
+</tr>
+<tr class="odd">
+<td align="left">Jim Leap</td>
+<td align="right">14</td>
+</tr>
+<tr class="even">
+<td align="left">Bethenny Jackson</td>
+<td align="right">13</td>
+</tr>
+<tr class="odd">
+<td align="left">Daniel Boffey</td>
+<td align="right">9</td>
+</tr>
+<tr class="even">
+<td align="left">Carol Adl</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">Sarah George</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">Savannah Pointer</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">Adobo Chronicles</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="left">Bryan Murray</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">Crime</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="left">Sean Higgins</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">Connie Higgins</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Politics</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">Geoff Harbaugh</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Levi Perry</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Michael Green</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">James Bennett</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Paul Bedard</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">❌ Baxter Dmitry ❌</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Alan Smithee</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Bloomberg Businessweek</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Capitol Police</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Jacob Wohl</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Jacqui Deevoy</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Judicial Watch</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Norwegian Lawmakers</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Nullifying Tax</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Pippa Crerar</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Un Workers</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Adam Shaw</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Attorney General</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">De Niro</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Edward Wong</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Emily Saul</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Grayson Black</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Hoffmann Daily</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Jacob Pramuk</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Jake Sherwood</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Jane Harvey</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Janet Monrose</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Katelyn Caralle</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Kimberly Strassel</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Lee Miller</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">North Korea</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Obama Spy</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Patriot Prayer</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">President Donald</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">President Erdogan</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">President Trump</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Rice University</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Robert Costa</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Ron Dixon</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">San Diego</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Senate Republicans</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">The Daily</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Vanessa Kirby</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Wendy Mcqueen</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<ol start="5" style="list-style-type: decimal">
+<li>Looking at a word cloud, politic is the most common topics for fake news. Key words such as <strong>Trump</strong>, <strong>Hillary</strong>, <strong>Obama</strong>, and <strong>Russia</strong> are among the top. Other negative key words such as <strong>dead</strong>, <strong>arrested</strong>, and <strong>ban</strong> are also mentioned a lot.</li>
+</ol>
+<pre class="r"><code>wordcloud(term_frequency_df$name, term_frequency_df$frequency, max.words = 100, random.order = FALSE, random.color = FALSE, colors= c(&quot;skyblue&quot;,&quot;skyblue1&quot;,&quot;skyblue2&quot;,&quot;skyblue3&quot;, &quot;skyblue4&quot;))</code></pre>
+<p><img src="fakenews_git_publish_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>This analysis provided top websites with fake content to avoid. It also gives a glimpse onto topics such as politic that usually has a lot of fake news. However, this is not an exhausted list of every websites, Facebook users should be careful and selective with what content they read. Maybe next time, keeping or banning a list of fake news website is a good idea!</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
