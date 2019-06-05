@@ -1,0 +1,7 @@
+name: "Fake News Analysis"
+navbar:
+  title: "Fake News Analysis"
+  left:
+    - text: "Analysis"
+      href: fakenews_git_publish.html
+output_dir: "docs"
