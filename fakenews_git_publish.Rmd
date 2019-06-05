@@ -1,8 +1,5 @@
 ---
 title: "Analysis of Fake News Websites on Facebook in 2018"
-author: "Nguyen Doan"
-date: "`r Sys.Date()`"
-output: html_document
 ---
 
 ```{r, echo=FALSE, message=FALSE}
